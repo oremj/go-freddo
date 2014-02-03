@@ -36,7 +36,7 @@ func NewFreddo(configFile string) (*Freddo, error) {
 	}
 
 	for app, val := range c.Apps {
-		tmp := NewApp()
+		tmp := NewApp(app)
 		tmp.Script = val.Script
 		freddo.Apps[app] = tmp
 	}

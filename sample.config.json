@@ -1,7 +1,7 @@
 {
     "apps": {
         "sampleapp": {
-            "script": "true && ls -l"
+            "script": "sleep 5 && ls -l"
         },
         "badscript": {
             "script": "echo 'an error' && false && ls -l"
