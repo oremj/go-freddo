@@ -1,0 +1,10 @@
+{
+    "apps": {
+        "sampleapp": {
+            "script": "true && ls -l"
+        },
+        "badscript": {
+            "script": "echo 'an error' && false && ls -l"
+        }
+    }
+}
