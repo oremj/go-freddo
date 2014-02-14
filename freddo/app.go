@@ -17,32 +17,32 @@ type App struct {
 
 func NewApp(name string) *App {
 	app := &App{
-		Name: name,
+		Name:    name,
+		waiting: 1,
 	}
 	return app
 }
 
-func (a *App) incWaitLock() error {
+func (a *App) wait() error {
 	a.waitLock.Lock()
 	defer a.waitLock.Unlock()
 
-	if a.waiting > 0 {
-		return fmt.Errorf("There are already %d updates waiting.", a.waiting)
+	if a.waiting <= 0 {
+		return fmt.Errorf("There are already updates waiting.")
 	}
 
-	a.waiting++
+	a.waiting--
 	return nil
 }
 
-func (a *App) decWaitLock() {
+func (a *App) signal() {
 	a.waitLock.Lock()
 	defer a.waitLock.Unlock()
-
-	a.waiting--
+	a.waiting++
 }
 
 func (a *App) Update() {
-	err := a.incWaitLock()
+	err := a.wait()
 	if err != nil {
 		log.Print(err)
 		return
@@ -50,7 +50,7 @@ func (a *App) Update() {
 
 	a.updateLock.Lock()
 	defer a.updateLock.Unlock()
-	a.decWaitLock()
+	a.signal()
 
 	log.Print("Running: ", a.Script)
 
