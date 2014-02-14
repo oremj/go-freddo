@@ -8,8 +8,8 @@ import (
 )
 
 type App struct {
-	updateLock *sync.Mutex
-	waitLock   *sync.Mutex
+	updateLock sync.Mutex
+	waitLock   sync.Mutex
 	waiting    int
 	Name       string
 	Script     string
@@ -17,9 +17,7 @@ type App struct {
 
 func NewApp(name string) *App {
 	app := &App{
-		Name:       name,
-		updateLock: new(sync.Mutex),
-		waitLock:   new(sync.Mutex),
+		Name: name,
 	}
 	return app
 }
