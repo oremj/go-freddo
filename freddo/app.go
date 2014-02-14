@@ -1,16 +1,16 @@
 package freddo
 
 import (
-	"fmt"
 	"log"
 	"os/exec"
 	"sync"
+
+	"github.com/oremj/go-freddo/semaphore"
 )
 
 type App struct {
 	updateLock sync.Mutex
-	waitLock   sync.Mutex
-	waiting    int
+	waitSemaphore *semaphore.Semaphore
 	Name       string
 	Script     string
 }
@@ -18,39 +18,20 @@ type App struct {
 func NewApp(name string) *App {
 	app := &App{
 		Name:    name,
-		waiting: 1,
+		waitSemaphore: semaphore.NewSemaphore(1),
 	}
 	return app
 }
 
-func (a *App) wait() error {
-	a.waitLock.Lock()
-	defer a.waitLock.Unlock()
-
-	if a.waiting <= 0 {
-		return fmt.Errorf("There are already updates waiting.")
-	}
-
-	a.waiting--
-	return nil
-}
-
-func (a *App) signal() {
-	a.waitLock.Lock()
-	defer a.waitLock.Unlock()
-	a.waiting++
-}
-
 func (a *App) Update() {
-	err := a.wait()
-	if err != nil {
-		log.Print(err)
+	if !a.waitSemaphore.Wait() {
+		log.Println("There are already updates waiting.")
 		return
 	}
 
 	a.updateLock.Lock()
 	defer a.updateLock.Unlock()
-	a.signal()
+	a.waitSemaphore.Signal()
 
 	log.Print("Running: ", a.Script)
 
