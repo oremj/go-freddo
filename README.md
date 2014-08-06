@@ -14,5 +14,5 @@ cd go-freddo
 Running
 ----
 ```bash
-./go-freddo -bind ":8080" -config ./config.json
+./go-freddo -bind ":8080" -config ./sample.config.toml
 ```
