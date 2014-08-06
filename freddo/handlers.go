@@ -1,23 +1,58 @@
 package freddo
 
 import (
+	"bytes"
+	"io"
 	"log"
 	"net/http"
 
-	"github.com/codegangsta/martini"
+	"github.com/zenazn/goji/web"
 )
 
-func (f *Freddo) UpdateApp(params martini.Params, res http.ResponseWriter) string {
-	appName := params["app_name"]
+func (f *Freddo) UpdateApp(c web.C, w http.ResponseWriter, req *http.Request) {
+	appName := c.URLParams["appname"]
 
 	app, ok := f.Apps[appName]
 	if !ok {
 		log.Printf("Could not find app: %s", appName)
-		res.WriteHeader(http.StatusNotFound)
-		return ""
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
-	go app.Update()
+	contentType := req.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Bad Content Type"))
+		return
+	}
 
-	return "OK"
+	body := new(bytes.Buffer)
+	_, err := io.Copy(body, req.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	defer req.Body.Close()
+
+	signature := req.Header.Get("X-Hub-Signature")
+	ok, err = app.HmacEqual(body.Bytes(), signature)
+	if err != nil {
+		log.Print(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	err = app.QueueUpdate()
+	if err != nil {
+		log.Print(err)
+		w.WriteHeader(http.StatusServiceUnavailable)
+		w.Write([]byte("Update queue is full."))
+		return
+	}
+
+	w.Write([]byte("OK"))
 }

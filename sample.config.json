@@ -1,10 +1,12 @@
 {
     "apps": {
         "sampleapp": {
-            "script": "sleep 5 && ls -l"
+            "script": "sleep 5 && ls -l",
+            "secret": "tat0chae8FeP"
         },
         "badscript": {
-            "script": "echo 'an error' && false && ls -l"
+            "script": "echo 'an error' && false && ls -l",
+            "secret": "eusheghiiv3F"
         }
     }
 }

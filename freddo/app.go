@@ -1,38 +1,63 @@
 package freddo
 
 import (
+	"crypto/hmac"
+	"crypto/sha1"
+	"errors"
+	"hash"
 	"log"
 	"os/exec"
-	"sync"
-
-	"github.com/oremj/go-freddo/semaphore"
+	"strings"
 )
 
 type App struct {
-	updateLock sync.Mutex
-	waitSemaphore *semaphore.Semaphore
-	Name       string
-	Script     string
+	Name        string
+	Secret      []byte
+	Script      string
+	UpdateQueue chan string
 }
 
 func NewApp(name string) *App {
 	app := &App{
-		Name:    name,
-		waitSemaphore: semaphore.NewSemaphore(1),
+		Name:        name,
+		UpdateQueue: make(chan string, 1),
 	}
 	return app
 }
 
-func (a *App) Update() {
-	if !a.waitSemaphore.Wait() {
-		log.Println("There are already updates waiting.")
-		return
+func (a *App) HmacEqual(msg []byte, msgSig string) (bool, error) {
+	parts := strings.Split(msgSig, "=")
+	if len(parts) != 2 {
+		return false, errors.New("Invalid signature: " + msgSig)
 	}
+	var mac hash.Hash
+	switch parts[0] {
+	case "sha1":
+		mac = hmac.New(sha1.New, a.Secret)
+	default:
+		return false, errors.New("Unsupported hash type: " + parts[0])
+	}
+	mac.Write(msg)
+	expected := mac.Sum(nil)
+	return hmac.Equal([]byte(parts[1]), expected), nil
+}
 
-	a.updateLock.Lock()
-	defer a.updateLock.Unlock()
-	a.waitSemaphore.Signal()
+func (a *App) QueueUpdate() error {
+	select {
+	case a.UpdateQueue <- "update":
+		return nil
+	default:
+		return errors.New("Could not queue update for " + a.Name)
+	}
+}
 
+func (a *App) LoopQueue() {
+	for _ = range a.UpdateQueue {
+		a.Update()
+	}
+}
+
+func (a *App) Update() {
 	log.Print("Running: ", a.Script)
 
 	out, err := a.RunScript()

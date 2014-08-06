@@ -12,6 +12,7 @@ type Freddo struct {
 type ConfigJson struct {
 	Apps map[string]struct {
 		Script string `json:"script"`
+		Secret string `json:"secret"`
 	} `json:"apps"`
 }
 
@@ -38,7 +39,9 @@ func NewFreddo(configFile string) (*Freddo, error) {
 	for app, val := range c.Apps {
 		tmp := NewApp(app)
 		tmp.Script = val.Script
+		tmp.Secret = []byte(val.Secret)
 		freddo.Apps[app] = tmp
+		go tmp.LoopQueue()
 	}
 	return freddo, nil
 }
