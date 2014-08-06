@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"errors"
+	"fmt"
 	"hash"
 	"log"
 	"os/exec"
@@ -39,7 +40,7 @@ func (a *App) HmacEqual(msg []byte, msgSig string) (bool, error) {
 	}
 	mac.Write(msg)
 	expected := mac.Sum(nil)
-	return hmac.Equal([]byte(parts[1]), expected), nil
+	return parts[1] == fmt.Sprintf("%x", expected), nil
 }
 
 func (a *App) QueueUpdate() error {
