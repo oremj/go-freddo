@@ -8,7 +8,7 @@ Building
 ```bash
 git clone git@github.com:oremj/go-freddo.git
 cd go-freddo
-go build
+./build
 ```
 
 Running
