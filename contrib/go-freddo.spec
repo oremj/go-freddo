@@ -4,7 +4,7 @@
 %global shortrev %(r=%{rev}; echo ${r:0:12})
 
 Name: go-freddo
-Version: 0.0.1
+Version: 1.0.0
 Release: r1.%{shortrev}%{?dist}
 Summary: A remote process runner.
 
@@ -18,7 +18,7 @@ BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 A remote process runner.
 
 %prep
-%setup -q -n go-freddo-master
+%setup -q -n go-freddo-%{version}
 
 %build
 ./build
