@@ -1,0 +1,21 @@
+[apps.sampleapp]
+secret = "tat0chae8FeP"
+
+[apps.badscript]
+secret = "eusheghiiv3F"
+
+[[apps.badscript.branch]]
+ref =" refs/heads/master"
+script = "echo 'an error' && false && ls -l"
+
+[[apps.sampleapp.branch]]
+ref = "refs/heads/master"
+script = "sleep 5 && ls -l"
+
+[[apps.sampleapp.branch]]
+ref = "refs/heads/updated"
+script = "sleep 5 && ls -l"
+
+[[apps.sampleapp.branch]]
+ref = "refs/heads/updated"
+script = "sleep 3 && ls -l"

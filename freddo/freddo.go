@@ -1,32 +1,25 @@
 package freddo
 
-import (
-	"encoding/json"
-	"os"
-)
+import "github.com/BurntSushi/toml"
 
 type Freddo struct {
 	Apps map[string]*App
 }
 
-type ConfigJson struct {
+type ConfigTOML struct {
 	Apps map[string]struct {
-		Script string `json:"script"`
-	} `json:"apps"`
+		Secret string
+		Branch []struct {
+			Ref    string
+			Script string
+		}
+	}
 }
 
 // Read config and return freddo object.
 func NewFreddo(configFile string) (*Freddo, error) {
-	f, err := os.Open(configFile)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	decoder := json.NewDecoder(f)
-
-	c := new(ConfigJson)
-	err = decoder.Decode(c)
+	c := new(ConfigTOML)
+	_, err := toml.DecodeFile(configFile, c)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +30,11 @@ func NewFreddo(configFile string) (*Freddo, error) {
 
 	for app, val := range c.Apps {
 		tmp := NewApp(app)
-		tmp.Script = val.Script
+		tmp.Secret = []byte(val.Secret)
+		for _, branch := range val.Branch {
+			b := tmp.AddBranch(branch.Ref, branch.Script)
+			go b.LoopQueue()
+		}
 		freddo.Apps[app] = tmp
 	}
 	return freddo, nil
