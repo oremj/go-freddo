@@ -6,6 +6,10 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/BurntSushi/toml",
+			"Rev": "2ceedfee35ad3848e49308ab0c9a4f640cfb5fb2"
+		},
+		{
 			"ImportPath": "github.com/zenazn/goji",
 			"Rev": "17b9035bcd162f59e1a1247d4a755124c37052c5"
 		}

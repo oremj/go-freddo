@@ -2,6 +2,7 @@ package freddo
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"log"
 	"net/http"
@@ -46,12 +47,28 @@ func (f *Freddo) UpdateApp(c web.C, w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = app.QueueUpdate()
+	payload := new(WebhookPayload)
+	err = json.Unmarshal(body.Bytes(), payload)
 	if err != nil {
-		log.Print(err)
-		w.WriteHeader(http.StatusServiceUnavailable)
-		w.Write([]byte("Update queue is full."))
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Could not decode JSON."))
 		return
+	}
+
+	branches, ok := app.Branches[payload.Ref]
+	if !ok {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Branch not found."))
+		return
+	}
+
+	for _, branch := range branches {
+		err = branch.QueueUpdate()
+		if err != nil {
+			log.Print(err)
+			w.Write([]byte("Update queue is full."))
+		}
 	}
 
 	w.Write([]byte("OK"))

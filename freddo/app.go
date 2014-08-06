@@ -11,19 +11,41 @@ import (
 	"strings"
 )
 
-type App struct {
-	Name        string
-	Secret      []byte
+type Branch struct {
 	Script      string
 	UpdateQueue chan string
 }
 
-func NewApp(name string) *App {
-	app := &App{
-		Name:        name,
+type App struct {
+	Name     string
+	Branches map[string][]*Branch
+	Secret   []byte
+	Script   string
+}
+
+func NewBranch(script string) *Branch {
+	return &Branch{
+		Script:      script,
 		UpdateQueue: make(chan string, 1),
 	}
+}
+
+func NewApp(name string) *App {
+	app := &App{
+		Branches: make(map[string][]*Branch),
+		Name:     name,
+	}
 	return app
+}
+
+func (a *App) AddBranch(ref, script string) *Branch {
+	branch := NewBranch(script)
+	_, ok := a.Branches[ref]
+	if !ok {
+		a.Branches[ref] = []*Branch{}
+	}
+	a.Branches[ref] = append(a.Branches[ref], branch)
+	return branch
 }
 
 func (a *App) HmacEqual(msg []byte, msgSig string) (bool, error) {
@@ -43,33 +65,33 @@ func (a *App) HmacEqual(msg []byte, msgSig string) (bool, error) {
 	return parts[1] == fmt.Sprintf("%x", expected), nil
 }
 
-func (a *App) QueueUpdate() error {
+func (b *Branch) QueueUpdate() error {
 	select {
-	case a.UpdateQueue <- "update":
+	case b.UpdateQueue <- "update":
 		return nil
 	default:
-		return errors.New("Could not queue update for " + a.Name)
+		return errors.New("Could not queue update for " + b.Script)
 	}
 }
 
-func (a *App) LoopQueue() {
-	for _ = range a.UpdateQueue {
-		a.Update()
+func (b *Branch) LoopQueue() {
+	for _ = range b.UpdateQueue {
+		b.Update()
 	}
 }
 
-func (a *App) Update() {
-	log.Print("Running: ", a.Script)
+func (b *Branch) Update() {
+	log.Print("Running: ", b.Script)
 
-	out, err := a.RunScript()
+	out, err := b.RunScript()
 	if err != nil {
-		log.Print("Failed: ", a.Script)
+		log.Print("Failed: ", b.Script)
 		log.Print("output: ", string(out))
 		log.Print(err)
 	}
 }
 
-func (a *App) RunScript() ([]byte, error) {
-	c := exec.Command("/bin/sh", "-c", a.Script)
+func (b *Branch) RunScript() ([]byte, error) {
+	c := exec.Command("/bin/sh", "-c", b.Script)
 	return c.CombinedOutput()
 }
