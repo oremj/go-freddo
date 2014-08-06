@@ -1,0 +1,13 @@
+{
+	"ImportPath": "github.com/oremj/go-freddo",
+	"GoVersion": "go1.3",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/zenazn/goji",
+			"Rev": "17b9035bcd162f59e1a1247d4a755124c37052c5"
+		}
+	]
+}

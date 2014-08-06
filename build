@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e
+set -u
+
+rm -rf ./_build/src
+mkdir -p ./_build/src/github.com/oremj
+ln -s $PWD ./_build/src/github.com/oremj/go-freddo
+
+export GOPATH=$PWD/Godeps/_workspace:$PWD/_build
+
+go build -o go-freddo .

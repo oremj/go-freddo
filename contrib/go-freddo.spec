@@ -23,11 +23,10 @@ A remote process runner.
 %build
 ./build
 
-
 %install
 rm -rf %{buildroot}
 install -d %{buildroot}%{_bindir}
-install ./go-freddo %{buildroot}%{_bindir}/go-freddo
+install ./go-freddo %{buildroot}%{_bindir}/freddo
 
 
 %clean
@@ -36,6 +35,6 @@ rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
-%{_bindir}/go-freddo
+%{_bindir}/freddo
 
 %changelog
