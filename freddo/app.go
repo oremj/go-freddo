@@ -88,7 +88,9 @@ func (b *Branch) Update() {
 		log.Print("Failed: ", b.Script)
 		log.Print("output: ", string(out))
 		log.Print(err)
+		return
 	}
+	log.Print("Finished: ", b.Script)
 }
 
 func (b *Branch) RunScript() ([]byte, error) {
