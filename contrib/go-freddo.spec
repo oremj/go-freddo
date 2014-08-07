@@ -1,11 +1,9 @@
 %define  debug_package %{nil}
 %global __strip /bin/true
-%global rev ad8bd97c2b3923bd928d4e6afe096df7b55273c6
-%global shortrev %(r=%{rev}; echo ${r:0:12})
 
 Name: go-freddo
-Version: 1.0.0
-Release: r1.%{shortrev}%{?dist}
+Version: 1.0.1
+Release: r1.%{?dist}
 Summary: A remote process runner.
 
 License: MPL
