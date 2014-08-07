@@ -47,6 +47,11 @@ func (f *Freddo) UpdateApp(c web.C, w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	if req.Header.Get("X-GitHub-Event") == "ping" {
+		w.Write([]byte("pong"))
+		return
+	}
+
 	payload := new(WebhookPayload)
 	err = json.Unmarshal(body.Bytes(), payload)
 	if err != nil {
