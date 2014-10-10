@@ -16,3 +16,4 @@ Running
 ```bash
 ./go-freddo -bind ":8080" -config ./sample.config.toml
 ```
+
